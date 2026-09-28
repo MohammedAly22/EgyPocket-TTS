@@ -69,7 +69,7 @@ tests/                    CATT normalization, frontend, ة restoration, tokenize
 
 ### 1. Create the pod
 
-* GPU: **1 × RTX 4090 (24 GB)**.
+* GPU: **1 × RTX 4090 (24 GB)** or any newer GPU with ≥ 24 GB (Blackwell cards such as the RTX PRO 4500 work too: the setup script installs the matching CUDA build).
 * Template: any RunPod PyTorch / CUDA 12 template with JupyterLab (e.g. "RunPod Pytorch 2.x").
 * **Volume disk: 100 GB**, mounted at `/workspace`. Everything goes there: env, data (~15 GB), models, checkpoints (~15 GB).
 * Container disk: 30 GB.
