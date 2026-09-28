@@ -147,6 +147,13 @@ for chunk in tts.stream("نص طويل ..."):                                # s
 print(tts.last_stats.real_time_factor, tts.last_stats.first_chunk_sec)
 ```
 
+**Streaming web demo (CPU)**: live audio plus time-to-first-audio and real-time factor:
+
+```bash
+pip install "gradio>=5"
+python apps/gradio_demo.py --bundle export/egypocket_6l      # http://localhost:7860
+```
+
 **Overriding pronunciation.** Write diacritics only on the word, or even the single letter, that is read wrongly:
 
 | input | reading |
