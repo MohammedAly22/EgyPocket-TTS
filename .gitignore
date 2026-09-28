@@ -11,3 +11,4 @@ runs/
 export/
 egypocket_data/
 .venv/
+*.zip
