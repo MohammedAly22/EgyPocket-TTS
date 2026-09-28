@@ -142,6 +142,9 @@ def step_say(paths: DataPaths, a: argparse.Namespace):
 
 
 def main(argv: list[str] | None = None):
+    # Batches grow in length (clips are length-sorted); expandable segments stop the
+    # CUDA caching allocator from fragmenting. Must be set before torch initializes CUDA.
+    os.environ.setdefault("PYTORCH_CUDA_ALLOC_CONF", "expandable_segments:True")
     logging.basicConfig(level=logging.INFO, format="[%(asctime)s %(levelname)s %(name)s] %(message)s")
     p = argparse.ArgumentParser(prog="egypocket")
     p.add_argument("--data-root", default=None, help="defaults to $EGY_DATA or /workspace/egypocket_data")
