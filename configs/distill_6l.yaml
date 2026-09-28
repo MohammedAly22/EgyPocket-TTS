@@ -1,0 +1,57 @@
+# Stage 2 — 6-layer STUDENT for CPU inference: depth distillation of the
+# Egyptian teacher (pocket-tts recipe training/configs/depth_distill.yaml).
+# The student regresses onto the teacher's CFG-combined backbone output
+# (guidance 2.0 baked in), so at inference it needs ONE backbone pass per frame.
+# $TEACHER_CKPT is set by the notebook (newest teacher checkpoint by default).
+model_config: ${EGY_DATA}/artifacts/egy_6l.yaml
+start_from_pretrained: false
+distill_cfg_coef: 2.0
+distill_teacher_config: ${EGY_DATA}/artifacts/egy_24l.yaml
+distill_teacher_weights: ${TEACHER_CKPT}
+distill_teacher_use_ema: true
+
+data:
+  train_cache: ${EGY_DATA}/cache/train
+  valid_cache: ${EGY_DATA}/cache/valid
+  lexicon: ${EGY_DATA}/artifacts/ta_marbuta_lexicon.json
+  max_duration_sec: 20.0
+  max_voice_prompt_sec: 5.0
+  prompt_trim_max_sec: 0.5
+  final_punct_dropout: 0.3
+  num_bucket_batches: 20
+  diacritics:
+    p_plain: 0.55
+    p_partial: 0.30
+    p_full: 0.15
+    partial_word_prob: [0.1, 0.5]
+    sparse_word_prob: 0.4
+    sparse_keep_prob: [0.3, 0.8]
+
+flow:
+  type: lsd
+  kwargs: {}
+
+# The teacher's targets are always fully conditioned: no CFG dropout here.
+text_dropout: 0.0
+voice_dropout: 0.0
+
+optim:
+  lr: 4e-4
+  schedule: cosine
+  warmup_steps: 1000
+
+run_dir: ${EGY_DATA}/runs/distill_6l
+batch_size: 16
+grad_accum_steps: 4
+max_steps: 20000
+ema_decay: 0.999
+amp_dtype: bfloat16
+compile: true
+
+log_freq: 25
+valid_freq: 1000
+sample_freq: 1000
+ckpt_freq: 2000
+num_ckpt_keep: 3
+sample_cfg_coef: 1.0   # guidance is baked into the student
+sample_temp: 0.3

@@ -1,0 +1,56 @@
+# Stage 1 — 24-layer TEACHER: fine-tune Pocket TTS's English 24-layer teacher
+# into Egyptian Arabic (pocket-tts recipe training/configs/finetune_language.yaml).
+# The text embedding starts fresh (new character tokenizer), so the backbone
+# moves with it at lr 2e-4. Paths use $EGY_DATA (default /workspace/egypocket_data).
+model_config: ${EGY_DATA}/artifacts/egy_24l.yaml
+start_from_pretrained: true
+reset_text_embedding: true
+
+data:
+  train_cache: ${EGY_DATA}/cache/train
+  valid_cache: ${EGY_DATA}/cache/valid
+  lexicon: ${EGY_DATA}/artifacts/ta_marbuta_lexicon.json
+  max_duration_sec: 20.0
+  max_voice_prompt_sec: 5.0
+  prompt_trim_max_sec: 0.5
+  final_punct_dropout: 0.3
+  num_bucket_batches: 20
+  diacritics:
+    p_plain: 0.55            # most samples are plain text: the model must read undiacritized Arabic
+    p_partial: 0.30          # some words diacritized ...
+    p_full: 0.15             # ... or the whole utterance
+    partial_word_prob: [0.1, 0.5]
+    sparse_word_prob: 0.4    # a diacritized word sometimes keeps only a few of its marks
+    sparse_keep_prob: [0.3, 0.8]
+
+flow:
+  type: lsd
+  kwargs: {}
+
+flow_batch_multiplier: 4
+eos_loss_weight: 0.1
+text_dropout: 0.2
+voice_dropout: 0.2
+
+optim:
+  lr: 2e-4
+  schedule: constant
+  warmup_steps: 1000
+
+run_dir: ${EGY_DATA}/runs/teacher_24l
+# Effective batch 64 = 8 x 8 accumulation (fits a 24 GB RTX 4090 in bf16).
+batch_size: 8
+grad_accum_steps: 8
+max_steps: 30000
+stats_ema_steps: 1000
+ema_decay: 0.999
+amp_dtype: bfloat16
+compile: true
+
+log_freq: 25
+valid_freq: 1000
+sample_freq: 1000
+ckpt_freq: 2000
+num_ckpt_keep: 3
+sample_cfg_coef: 2.0   # a teacher samples with classifier-free guidance
+sample_temp: 0.3
